@@ -1,6 +1,6 @@
 # Matchers
 
-**Matchers** is simple package to allow go programmers write java like tests.
+**Matchers** is simple package to allow go programmers write java like tests. It is compatible with go test, self described and self tested (see matchers_test.go).
 
 ```go
 package main
@@ -17,5 +17,40 @@ func TestSample(t *testing.T) {
 
         // Expectation
         AssertThat(t, Expect{true, Not{true}}, Fails{})
+}
+```
+
+It is easy to implement your own custom matcher and combine it with others.
+
+```go
+package main
+
+import (
+        "fmt"
+        "testing"
+
+        . "github.com/aandryashin/matchers"
+)
+
+type Contains struct {
+        S string
+}
+
+func (m Contains) Match(i interface{}) bool {
+        for _, v := range i.([]string) {
+                if v == m.S {
+                        return true
+                }
+        }
+        return false
+}
+
+func (m Contains) String() string {
+        return fmt.Sprintf("contains %v", m.S)
+}
+
+func TestContains(t *testing.T) {
+        AssertThat(t, []string{"one", "two", "three"}, Contains{"two"})
+        AssertThat(t, []string{"one", "two", "three"}, Not{Contains{"four"}})
 }
 ```
