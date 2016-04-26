@@ -9,6 +9,7 @@ import (
 
 type Matcher interface {
 	Match(interface{}) bool
+	String() string
 }
 
 type EqualTo struct {
