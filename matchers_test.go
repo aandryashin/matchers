@@ -55,6 +55,12 @@ func TestFails(t *testing.T) {
 	AssertThat(t, Expect{Expect{true, Is{true}}, Fails{}}, Fails{})
 }
 
+func TestDesc(t *testing.T) {
+	f := new(testing.T)
+	AssertThat(f, true, Desc{"epic fail", Is{false}})
+	AssertThat(t, f.Failed(), Is{true})
+}
+
 func TestFailsPanic(t *testing.T) {
 	defer func() {
 		e := recover()

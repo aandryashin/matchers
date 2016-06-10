@@ -96,6 +96,19 @@ func (any AnyOf) String() string {
 	return s
 }
 
+type Desc struct {
+	D string
+	M Matcher
+}
+
+func (m Desc) Match(i interface{}) bool {
+	return m.M.Match(i)
+}
+
+func (m Desc) String() string {
+	return fmt.Sprintf("%v", m.M)
+}
+
 type Fails struct {
 }
 
@@ -125,8 +138,12 @@ func (e Expect) Confirm() error {
 }
 
 func AssertThat(t *testing.T, i interface{}, m Matcher) {
+	msg := "expect that"
+	if d, ok := m.(Desc); ok {
+		msg = d.D
+	}
 	err := Expect{i, m}.Confirm()
 	if err != nil {
-		t.Error(fmt.Sprintf("expect that %v", err))
+		t.Error(fmt.Sprintf("%s: %v", msg, err))
 	}
 }
