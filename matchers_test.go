@@ -16,11 +16,11 @@ func TestEqualTo(t *testing.T) {
 
 func TestAssertThat(t *testing.T) {
 	f := new(testing.T)
-	AssertThat(f, true, EqualTo{true})
+	AssertThat(Protect{f}, true, EqualTo{true})
 	if f.Failed() {
 		t.Error("true is not true")
 	}
-	AssertThat(f, true, EqualTo{false})
+	AssertThat(Protect{f}, true, EqualTo{false})
 	if !f.Failed() {
 		t.Error("true is false")
 	}
@@ -53,12 +53,6 @@ func TestAnyOf(t *testing.T) {
 
 func TestFails(t *testing.T) {
 	AssertThat(t, Expect{Expect{true, Is{true}}, Fails{}}, Fails{})
-}
-
-func TestDesc(t *testing.T) {
-	f := new(testing.T)
-	AssertThat(f, true, Desc{"epic fail", Is{false}})
-	AssertThat(t, f.Failed(), Is{true})
 }
 
 func TestFailsPanic(t *testing.T) {

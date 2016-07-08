@@ -12,6 +12,18 @@ type Matcher interface {
 	String() string
 }
 
+type Mortal interface {
+	Fatal(args ...interface{})
+}
+
+type Protect struct {
+	*testing.T
+}
+
+func (t Protect) Fatal(args ...interface{}) {
+	t.Error(args...)
+}
+
 type EqualTo struct {
 	V interface{}
 }
@@ -96,19 +108,6 @@ func (any AnyOf) String() string {
 	return s
 }
 
-type Desc struct {
-	D string
-	M Matcher
-}
-
-func (m Desc) Match(i interface{}) bool {
-	return m.M.Match(i)
-}
-
-func (m Desc) String() string {
-	return fmt.Sprintf("%v", m.M)
-}
-
 type Fails struct {
 }
 
@@ -137,13 +136,9 @@ func (e Expect) Confirm() error {
 	return nil
 }
 
-func AssertThat(t *testing.T, i interface{}, m Matcher) {
-	msg := "expect that"
-	if d, ok := m.(Desc); ok {
-		msg = d.D
-	}
+func AssertThat(t Mortal, i interface{}, m Matcher) {
 	err := Expect{i, m}.Confirm()
 	if err != nil {
-		t.Error(fmt.Sprintf("%s: %v", msg, err))
+		t.Fatal(fmt.Sprintf("expect that: %v", err))
 	}
 }
