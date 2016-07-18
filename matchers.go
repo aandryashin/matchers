@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -21,23 +22,27 @@ func (m EqualTo) Match(i interface{}) bool {
 }
 
 func (m EqualTo) String() string {
-	return fmt.Sprintf("equal to %v", m.V)
+	return fmt.Sprintf("equal to %v(%v)", reflect.TypeOf(m.V), m.V)
 }
 
 type Is struct {
 	V interface{}
 }
 
-func (m Is) Match(i interface{}) bool {
+func (m Is) matcher() Matcher {
 	switch m.V.(type) {
 	case Matcher:
-		return m.V.(Matcher).Match(i)
+		return m.V.(Matcher)
 	}
-	return EqualTo{m.V}.Match(i)
+	return &EqualTo{m.V}
+}
+
+func (m Is) Match(i interface{}) bool {
+	return m.matcher().Match(i)
 }
 
 func (m Is) String() string {
-	return fmt.Sprintf("is %v", m.V)
+	return fmt.Sprintf("is %v", m.matcher())
 }
 
 type Not struct {
@@ -64,14 +69,11 @@ func (all AllOf) Match(v interface{}) bool {
 }
 
 func (all AllOf) String() string {
-	s := ""
-	for i, m := range all {
-		s += fmt.Sprintf("%v", m)
-		if i < len(all)-1 {
-			s += ", and "
-		}
+	s := []string{}
+	for _, m := range all {
+		s = append(s, fmt.Sprintf("%v", m))
 	}
-	return s
+	return strings.Join(s, ", and ")
 }
 
 type AnyOf []Matcher
@@ -132,7 +134,7 @@ func (m Expect) String() string {
 
 func (e Expect) Confirm() error {
 	if !e.M.Match(e.I) {
-		return errors.New(fmt.Sprintf("%v %v", e.I, e.M))
+		return errors.New(fmt.Sprintf("%v(%v) %v", reflect.TypeOf(e.I), e.I, e.M))
 	}
 	return nil
 }
