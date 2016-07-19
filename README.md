@@ -52,6 +52,6 @@ func (m Contains) String() string {
 
 func TestContains(t *testing.T) {
         AssertThat(t, []string{"one", "two", "three"}, Contains{"two"})
-        AssertThat(t, []string{"one", "two", "three"}, Not{Contains{"four"}})
+        AssertThat(t, Expect{[]string{"one", "two", "three"}, Contains{"four"}}, Fails{})
 }
 ```
