@@ -1,4 +1,5 @@
 # Matchers
+[![Build Status](https://travis-ci.org/aandryashin/matchers.svg?branch=master)](https://travis-ci.org/aandryashin/matchers)
 
 **Matchers** is simple package to allow go programmers write java like tests. It is compatible with go test, self described and self tested (see matchers_test.go).
 
