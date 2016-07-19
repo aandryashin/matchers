@@ -57,6 +57,18 @@ func (m Is) String() string {
 	return fmt.Sprintf("is %v", m.matcher())
 }
 
+type TypeOf struct {
+	V interface{}
+}
+
+func (m TypeOf) Match(i interface{}) bool {
+	return reflect.TypeOf(m.V) == reflect.TypeOf(i)
+}
+
+func (m TypeOf) String() string {
+	return fmt.Sprintf("type %v", reflect.TypeOf(m.V))
+}
+
 type Not struct {
 	V interface{}
 }
