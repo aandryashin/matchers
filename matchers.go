@@ -57,6 +57,18 @@ func (m Is) String() string {
 	return fmt.Sprintf("is %v", m.matcher())
 }
 
+type TypeOf struct {
+	V interface{}
+}
+
+func (m TypeOf) Match(i interface{}) bool {
+	return reflect.TypeOf(m.V) == reflect.TypeOf(i)
+}
+
+func (m TypeOf) String() string {
+	return fmt.Sprintf("type %v", reflect.TypeOf(m.V))
+}
+
 type Not struct {
 	V interface{}
 }
@@ -108,6 +120,46 @@ func (any AnyOf) String() string {
 		}
 	}
 	return s
+}
+
+type ElementsAre []interface{}
+
+func (self ElementsAre) Match(vs interface{}) bool {
+	if reflect.TypeOf(vs).Kind() == reflect.Slice {
+		return self.match(reflect.ValueOf(vs))
+	}
+	return false
+}
+
+func (self ElementsAre) matcher(i int) Matcher {
+	switch self[i].(type) {
+	case Matcher:
+		return self[i].(Matcher)
+	}
+	return &EqualTo{self[i]}
+}
+
+func (self ElementsAre) match(vs reflect.Value) bool {
+	if len(self) != vs.Len() {
+		return false
+	}
+	m := make(map[int]bool)
+	for i := range self {
+		for j := 0; j < vs.Len(); j++ {
+			if self.matcher(i).Match(vs.Index(j).Interface()) {
+				m[i] = true
+			}
+		}
+	}
+	return len(m) == len(self)
+}
+
+func (self ElementsAre) String() string {
+	s := []string{}
+	for _, m := range self {
+		s = append(s, fmt.Sprintf("%v", m))
+	}
+	return "elements are: [" + strings.Join(s, ", ") + "]"
 }
 
 type Fails struct {
