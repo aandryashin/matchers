@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -33,23 +34,39 @@ func (m EqualTo) Match(i interface{}) bool {
 }
 
 func (m EqualTo) String() string {
-	return fmt.Sprintf("equal to %v", m.V)
+	return fmt.Sprintf("equal to %v(%v)", reflect.TypeOf(m.V), m.V)
 }
 
 type Is struct {
 	V interface{}
 }
 
-func (m Is) Match(i interface{}) bool {
+func (m Is) matcher() Matcher {
 	switch m.V.(type) {
 	case Matcher:
-		return m.V.(Matcher).Match(i)
+		return m.V.(Matcher)
 	}
-	return EqualTo{m.V}.Match(i)
+	return &EqualTo{m.V}
+}
+
+func (m Is) Match(i interface{}) bool {
+	return m.matcher().Match(i)
 }
 
 func (m Is) String() string {
-	return fmt.Sprintf("is %v", m.V)
+	return fmt.Sprintf("is %v", m.matcher())
+}
+
+type TypeOf struct {
+	V interface{}
+}
+
+func (m TypeOf) Match(i interface{}) bool {
+	return reflect.TypeOf(m.V) == reflect.TypeOf(i)
+}
+
+func (m TypeOf) String() string {
+	return fmt.Sprintf("type %v", reflect.TypeOf(m.V))
 }
 
 type Not struct {
@@ -76,14 +93,11 @@ func (all AllOf) Match(v interface{}) bool {
 }
 
 func (all AllOf) String() string {
-	s := ""
-	for i, m := range all {
-		s += fmt.Sprintf("%v", m)
-		if i < len(all)-1 {
-			s += ", and "
-		}
+	s := []string{}
+	for _, m := range all {
+		s = append(s, fmt.Sprintf("%v", m))
 	}
-	return s
+	return strings.Join(s, ", and ")
 }
 
 type AnyOf []Matcher
@@ -106,6 +120,46 @@ func (any AnyOf) String() string {
 		}
 	}
 	return s
+}
+
+type ElementsAre []interface{}
+
+func (self ElementsAre) Match(vs interface{}) bool {
+	if reflect.TypeOf(vs).Kind() == reflect.Slice {
+		return self.match(reflect.ValueOf(vs))
+	}
+	return false
+}
+
+func (self ElementsAre) matcher(i int) Matcher {
+	switch self[i].(type) {
+	case Matcher:
+		return self[i].(Matcher)
+	}
+	return &EqualTo{self[i]}
+}
+
+func (self ElementsAre) match(vs reflect.Value) bool {
+	if len(self) != vs.Len() {
+		return false
+	}
+	m := make(map[int]bool)
+	for i := range self {
+		for j := 0; j < vs.Len(); j++ {
+			if self.matcher(i).Match(vs.Index(j).Interface()) {
+				m[i] = true
+			}
+		}
+	}
+	return len(m) == len(self)
+}
+
+func (self ElementsAre) String() string {
+	s := []string{}
+	for _, m := range self {
+		s = append(s, fmt.Sprintf("%v", m))
+	}
+	return "elements are: [" + strings.Join(s, ", ") + "]"
 }
 
 type Fails struct {
@@ -131,7 +185,7 @@ func (m Expect) String() string {
 
 func (e Expect) Confirm() error {
 	if !e.M.Match(e.I) {
-		return errors.New(fmt.Sprintf("%v %v", e.I, e.M))
+		return errors.New(fmt.Sprintf("%v(%v) %v", reflect.TypeOf(e.I), e.I, e.M))
 	}
 	return nil
 }

@@ -51,6 +51,17 @@ func TestAnyOf(t *testing.T) {
 	AssertThat(t, Expect{true, AnyOf{Is{false}, Not{true}}}, Fails{})
 }
 
+func TestElementsAre(t *testing.T) {
+	AssertThat(t, []int{1, 2, 3, 4, 5}, ElementsAre{5, 1, 4, 2, 3})
+	AssertThat(t, []int{1, 2}, Not{ElementsAre{1, 2, 2}})
+	AssertThat(t, []int{1, 2}, Not{ElementsAre{1, 3}})
+}
+
+func TestTypeOf(t *testing.T) {
+	AssertThat(t, "zzzzz", TypeOf{string("")})
+	AssertThat(t, 1, Not{TypeOf{string("")}})
+}
+
 func TestFails(t *testing.T) {
 	AssertThat(t, Expect{Expect{true, Is{true}}, Fails{}}, Fails{})
 }
