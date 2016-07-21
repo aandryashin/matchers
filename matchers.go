@@ -162,6 +162,46 @@ func (self ElementsAre) String() string {
 	return "elements are: [" + strings.Join(s, ", ") + "]"
 }
 
+type Contains []interface{}
+
+func (self Contains) Match(vs interface{}) bool {
+	if reflect.TypeOf(vs).Kind() == reflect.Slice {
+		return self.match(reflect.ValueOf(vs))
+	}
+	return false
+}
+
+func (self Contains) matcher(i int) Matcher {
+	switch self[i].(type) {
+	case Matcher:
+		return self[i].(Matcher)
+	}
+	return &EqualTo{self[i]}
+}
+
+func (self Contains) match(vs reflect.Value) bool {
+	for i := range self {
+		match := false
+		for j := 0; j < vs.Len(); j++ {
+			if self.matcher(i).Match(vs.Index(j).Interface()) {
+				match = true
+			}
+		}
+		if !match {
+			return false
+		}
+	}
+	return true
+}
+
+func (self Contains) String() string {
+	s := []string{}
+	for _, m := range self {
+		s = append(s, fmt.Sprintf("%v", m))
+	}
+	return "contains: [" + strings.Join(s, ", ") + "]"
+}
+
 type Fails struct {
 }
 

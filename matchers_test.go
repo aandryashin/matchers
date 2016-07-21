@@ -57,6 +57,13 @@ func TestElementsAre(t *testing.T) {
 	AssertThat(t, []int{1, 2}, Not{ElementsAre{1, 3}})
 }
 
+func TestContains(t *testing.T) {
+	AssertThat(t, []int{1, 2, 3, 4, 5}, Contains{5, 1})
+	AssertThat(t, Expect{[]int{1, 2}, Contains{1, 3}}, Fails{})
+	AssertThat(t, Expect{[]int{1, 2}, Contains{3}}, Fails{})
+	AssertThat(t, []int{1, 2}, Contains{})
+}
+
 func TestTypeOf(t *testing.T) {
 	AssertThat(t, "zzzzz", TypeOf{string("")})
 	AssertThat(t, 1, Not{TypeOf{string("")}})
