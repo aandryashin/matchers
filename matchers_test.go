@@ -55,6 +55,12 @@ func TestElementsAre(t *testing.T) {
 	AssertThat(t, []int{1, 2, 3, 4, 5}, ElementsAre{5, 1, 4, 2, 3})
 	AssertThat(t, Expect{[]int{1, 2}, ElementsAre{1, 2, 2}}, Fails{})
 	AssertThat(t, Expect{[]int{1, 2}, ElementsAre{1, 3}}, Fails{})
+	AssertThat(t, Expect{1, ElementsAre{1, 3}}, Fails{})
+	v := []interface{}{}
+	a, b := 1, ""
+	v = append(v, a)
+	v = append(v, b)
+	AssertThat(t, v, ElementsAre{TypeOf{1}, TypeOf{""}})
 }
 
 func TestContains(t *testing.T) {
@@ -62,6 +68,12 @@ func TestContains(t *testing.T) {
 	AssertThat(t, Expect{[]int{1, 2}, Contains{1, 3}}, Fails{})
 	AssertThat(t, Expect{[]int{1, 2}, Contains{3}}, Fails{})
 	AssertThat(t, []int{1, 2}, Contains{})
+	AssertThat(t, Expect{1, Contains{}}, Fails{})
+	v := []interface{}{}
+	a, b := 1, ""
+	v = append(v, a)
+	v = append(v, b)
+	AssertThat(t, v, Contains{TypeOf{1}})
 }
 
 func TestTypeOf(t *testing.T) {
