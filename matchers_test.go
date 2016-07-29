@@ -86,9 +86,5 @@ func TestFails(t *testing.T) {
 }
 
 func TestFailsPanic(t *testing.T) {
-	defer func() {
-		e := recover()
-		AssertThat(t, e, Is{Not{nil}})
-	}()
-	AssertThat(t, true, Fails{})
+	AssertThat(t, Expect{true, Fails{}}, Fails{})
 }

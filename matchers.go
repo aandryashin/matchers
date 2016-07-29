@@ -223,9 +223,16 @@ func (m Expect) String() string {
 	return fmt.Sprintf("%v %v", m.I, m.M)
 }
 
-func (e Expect) Confirm() error {
+func (e Expect) Confirm() (err error) {
+	msg := fmt.Sprintf("%v(%v) %v", reflect.TypeOf(e.I), e.I, e.M)
+	defer func() {
+		e := recover()
+		if e != nil {
+			err = errors.New(fmt.Sprintf("%s, but was error: %v", e))
+		}
+	}()
 	if !e.M.Match(e.I) {
-		return errors.New(fmt.Sprintf("%v(%v) %v", reflect.TypeOf(e.I), e.I, e.M))
+		return errors.New(msg)
 	}
 	return nil
 }
