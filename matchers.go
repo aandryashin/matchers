@@ -228,7 +228,7 @@ func (e Expect) Confirm() (err error) {
 	defer func() {
 		e := recover()
 		if e != nil {
-			err = errors.New(fmt.Sprintf("%s, but was error: %v", e))
+			err = errors.New(fmt.Sprintf("%s, but was error: %v", msg, e))
 		}
 	}()
 	if !e.M.Match(e.I) {
