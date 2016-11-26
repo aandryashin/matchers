@@ -211,7 +211,7 @@ func (m Fails) Match(i interface{}) bool {
 }
 
 func (m Fails) String() string {
-	return fmt.Sprintf("fails")
+	return fmt.Sprint("fails")
 }
 
 type Expect struct {
